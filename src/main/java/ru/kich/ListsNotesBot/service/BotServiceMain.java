@@ -58,7 +58,7 @@ public class BotServiceMain extends TelegramLongPollingBot {
                     sendMessage(chatId, "Название списка создано и сохранено в БД");
                     break;
                 case "/create_position_in_topic":
-                    service.createPosition(chatId, "testTopic", "Test name of position");
+                    service.createPosition(chatId, "Test name of Topic", "Test name of position");
                     sendMessage(chatId, "Позиция добавлена в список и сохранена в БД");
                     break;
                 case "/show":
