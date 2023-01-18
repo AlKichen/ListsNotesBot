@@ -1,6 +1,7 @@
 package ru.kich.ListsNotesBot.service;
 
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -8,26 +9,27 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.kich.ListsNotesBot.config.BotConfig;
 import ru.kich.ListsNotesBot.entity.TopicEntity;
 import ru.kich.ListsNotesBot.entity.UserEntity;
-import ru.kich.ListsNotesBot.repository.BotRepository;
+import ru.kich.ListsNotesBot.repository.UserRepository;
 import ru.kich.ListsNotesBot.repository.PositionRepository;
 import ru.kich.ListsNotesBot.repository.TopicRepositiry;
 
+import java.util.List;
+
 @Component
-public class BotService extends TelegramLongPollingBot {
+public class BotServiceMain extends TelegramLongPollingBot {
 
     private final BotConfig config;
-    private final BotRepository botRepository;
 
-    private final TopicRepositiry topicRep;
-    private final PositionRepository positionRep;
+    private final BotServiceImpl service;
+//    private final UserRepository userRepository;
+//
+//    private final TopicRepositiry topicRep;
+//    private final PositionRepository positionRep;
 
 
-    public BotService(BotConfig config, BotRepository botRepository,
-                      TopicRepositiry topicRep, PositionRepository positionRep) {
+    public BotServiceMain(BotConfig config, BotServiceImpl service) {
         this.config = config;
-        this.botRepository = botRepository;
-        this.topicRep = topicRep;
-        this.positionRep = positionRep;
+        this.service = service;
     }
 
     @Override
@@ -48,29 +50,20 @@ public class BotService extends TelegramLongPollingBot {
             switch (messageText) {
                 case "/start":
                     startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                    UserEntity userEntity = new UserEntity();
-                    userEntity.setId(chatId);
-                    botRepository.save(userEntity);
+                    service.registerUser(chatId);
                     sendMessage(chatId, "Пользователь создан и зарегестрирован в БД");
                     break;
                 case "/create_topic":
-                    UserEntity user = botRepository.findById(chatId).get();
-                    TopicEntity topicEntity = new TopicEntity();
-                    topicEntity.setName("testTopic");
-                    topicEntity.setUser(user);
-                    topicRep.save(topicEntity);
+                    service.createTopic(chatId, "Test name of Topic");
                     sendMessage(chatId, "Название списка создано и сохранено в БД");
                     break;
-//                case "/create_position_in_topic":
-//                    UserEntity user2 = botRepository.findById(String.valueOf(chatId)).get();
-//                    TopicEntity topicEntity1 = user2.getTopics().get(0);
-//                    PositionEntity positionEntity = new PositionEntity();
-//                    positionEntity.setNamePosition("testPosition");
-//                    topicEntity1.setListInTopicEntities(List.of(positionEntity));
-//                    botRepository.save(user2);
-//                    sendMessage(chatId, "Позиция добавлена в список и сохранена в БД");
-//                    break;
-//                case "/show":
+                case "/create_position_in_topic":
+                    service.createPosition(chatId, "testTopic", "Test name of position");
+                    sendMessage(chatId, "Позиция добавлена в список и сохранена в БД");
+                    break;
+                case "/show":
+                    List<TopicEntity> allTopics = service.getAllTopics(chatId);
+                    sendMessage(chatId,allTopics.toString());
 //                    UserEntity user3 = botRepository.findById(String.valueOf(chatId)).get();
 //                    TopicEntity topicEntity2 = user3.getTopics().get(0);
 //                    sendMessage(chatId, topicEntity2.toString());

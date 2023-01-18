@@ -6,14 +6,14 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
-import ru.kich.ListsNotesBot.service.BotService;
+import ru.kich.ListsNotesBot.service.BotServiceMain;
 
 @Component
 public class BotInitializer {
 
-    private final BotService service;
+    private final BotServiceMain service;
 
-    public BotInitializer(BotService service) {
+    public BotInitializer(BotServiceMain service) {
         this.service = service;
     }
 

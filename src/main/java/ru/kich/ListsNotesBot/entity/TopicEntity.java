@@ -16,7 +16,7 @@ public class TopicEntity {
     @Column(name = "name_of_topic", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "topic")
+    @OneToMany(mappedBy = "topic") //fetch = FetchType.EAGER,, cascade = CascadeType.ALL
     private List<PositionEntity> listInTopicEntities;
 
     @ManyToOne
