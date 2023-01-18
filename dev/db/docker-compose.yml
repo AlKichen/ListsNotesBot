@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  # Локальная БД сервиса
+  task-tracker-db:
+    image: postgres
+    container_name: telegramBotDB
+    environment:
+      POSTGRES_USER: tg_bot_db_admin
+      POSTGRES_PASSWORD: tg_bot_db_admin
+    ports:
+      - 5433:5432
+    volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql

@@ -1,0 +1,17 @@
+spring:
+  application:
+    name: tg-bot-lists-notes
+  datasource:
+    url: jdbc:postgresql://localhost:5433/tg_bot_db
+    username: tg_bot_db_admin
+    password: tg_bot_db_admin
+  jackson:
+    default-property-inclusion: non_null
+  jpa:
+    properties:
+      hibernate:
+        hbm2ddl:
+          auto: update
+bot:
+  name: ListsNotesBot
+  token: 5922462924:AAG5HGVsMrX79QnaPVUf4IM9TN1tfZU3J20
