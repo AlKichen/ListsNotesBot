@@ -9,15 +9,15 @@ import javax.validation.constraints.NotNull;
 @Data
 @Table(name = "positions")
 public class PositionEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @NotNull
-    private Long positionId;
+    private Long Id;
 
     private String namePosition;
 
     @ManyToOne
-    @JoinColumn(name = "topic_id")
     private TopicEntity topic;
 
 }

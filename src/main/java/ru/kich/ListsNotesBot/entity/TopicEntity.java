@@ -10,16 +10,14 @@ import java.util.List;
 @Table(name = "topics")
 @Data
 public class TopicEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    private Long topicId;
+    private Long Id;
+
     @Column(name = "name_of_topic", nullable = false)
     private String name;
 
-    @OneToMany(mappedBy = "topic") //fetch = FetchType.EAGER,, cascade = CascadeType.ALL
-    private List<PositionEntity> listInTopicEntities;
-
     @ManyToOne
-    @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 }

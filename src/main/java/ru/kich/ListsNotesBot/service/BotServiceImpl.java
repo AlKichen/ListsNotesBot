@@ -70,46 +70,14 @@ public class BotServiceImpl implements DBBotService {
         return positionRepository.save(positionEntity);
     }
 
-    /*@Override
-    public List<TopicEntity> getAllTopics(Long userId) {
-        return topicRepositiry.findAllByUser_Id(userId);
-    }*/
     @Override
-    @Transactional
     public List<TopicEntity> getAllTopics(Long userId) {
-        return topicRepositiry.findAll();
-    }
-
-    /*@Override
-    public List<TopicEntity> getAllTopics(Long userId) {
-        List<TopicEntity> list = topicRepositiry.findAll();
-        List<TopicEntity> result = new ArrayList<>();
-        for (TopicEntity entity : list){
-            if(entity.getUser().getId().equals(userId)){
-                result.add(entity);
-            }
-        }
-        return result;
-    }*/
-
-
-
-    /*@Override
-    public List<UserEntity> getAllLists() {
-        return repository.findAll();
+        return topicRepositiry.findByUser_Id(userId);
     }
 
     @Override
-    public TopicEntity getTopicByName(long id, String name) {
-        UserEntity userFromDB = repository.findById(id).orElseThrow(NotFoundException::new);
-        List<TopicEntity> listOfTopics = userFromDB.getTopics();
-        TopicEntity result = null;
-        for (TopicEntity entity : listOfTopics) {
-            if (entity.getName().equals(name)) {
-                result = entity;
-            }
-        }
-        return result;
-    }*/
+    public List<PositionEntity> getPositionsByTopicId(TopicEntity topic) {
+        return positionRepository.findByTopic(topic);
+    }
 
 }

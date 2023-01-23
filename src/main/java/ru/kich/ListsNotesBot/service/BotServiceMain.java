@@ -7,6 +7,7 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.kich.ListsNotesBot.config.BotConfig;
+import ru.kich.ListsNotesBot.entity.PositionEntity;
 import ru.kich.ListsNotesBot.entity.TopicEntity;
 import ru.kich.ListsNotesBot.entity.UserEntity;
 import ru.kich.ListsNotesBot.repository.UserRepository;
@@ -61,12 +62,16 @@ public class BotServiceMain extends TelegramLongPollingBot {
                     service.createPosition(chatId, "Test name of Topic", "Test name of position");
                     sendMessage(chatId, "Позиция добавлена в список и сохранена в БД");
                     break;
-                case "/show":
+                case "/show_topics":
                     List<TopicEntity> allTopics = service.getAllTopics(chatId);
-                    sendMessage(chatId,allTopics.toString());
-//                    UserEntity user3 = botRepository.findById(String.valueOf(chatId)).get();
-//                    TopicEntity topicEntity2 = user3.getTopics().get(0);
-//                    sendMessage(chatId, topicEntity2.toString());
+                    sendMessage(chatId, allTopics.toString());
+                    break;
+                case "/show_positions":
+                    List<TopicEntity> allTopics2 = service.getAllTopics(chatId);
+                    TopicEntity topic = allTopics2.get(0);
+                    List<PositionEntity> allPositions = service.getPositionsByTopicId(topic);
+                    sendMessage(chatId, allPositions.toString());
+                    break;
                 default:
                     sendMessage(chatId, "Извините, данная функциональность в стадии разработки." +
                             " Спасибо за понимание!");

@@ -13,5 +13,6 @@ public interface DBBotService {
     List<TopicEntity> getTopicByName(String nameOfTopic);
     PositionEntity createPosition(Long userId, String nameOfTopic, String nameOfPosition);
     List<TopicEntity> getAllTopics(Long userId);
+    List<PositionEntity> getPositionsByTopicId(TopicEntity topic);
 
 }

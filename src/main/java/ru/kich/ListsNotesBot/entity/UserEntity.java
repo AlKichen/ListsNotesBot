@@ -14,8 +14,4 @@ public class UserEntity {
     @NotNull
     @Column(name = "id", nullable = false)
     Long id;
-
-    @OneToMany (mappedBy = "user") // fetch = FetchType.EAGER,, cascade = CascadeType.ALL
-    List<TopicEntity> topics;
-
 }
