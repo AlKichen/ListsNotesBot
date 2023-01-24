@@ -1,18 +1,14 @@
 package ru.kich.ListsNotesBot.service;
 
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.kich.ListsNotesBot.config.BotConfig;
+import ru.kich.ListsNotesBot.config.ReplyKeyboardMaker;
 import ru.kich.ListsNotesBot.entity.PositionEntity;
 import ru.kich.ListsNotesBot.entity.TopicEntity;
-import ru.kich.ListsNotesBot.entity.UserEntity;
-import ru.kich.ListsNotesBot.repository.UserRepository;
-import ru.kich.ListsNotesBot.repository.PositionRepository;
-import ru.kich.ListsNotesBot.repository.TopicRepositiry;
 
 import java.util.List;
 
@@ -22,15 +18,17 @@ public class BotServiceMain extends TelegramLongPollingBot {
     private final BotConfig config;
 
     private final BotServiceImpl service;
+    private final ReplyKeyboardMaker replyKeyboardMaker;
 //    private final UserRepository userRepository;
 //
 //    private final TopicRepositiry topicRep;
 //    private final PositionRepository positionRep;
 
 
-    public BotServiceMain(BotConfig config, BotServiceImpl service) {
+    public BotServiceMain(BotConfig config, BotServiceImpl service, ReplyKeyboardMaker replyKeyboardMaker) {
         this.config = config;
         this.service = service;
+        this.replyKeyboardMaker = replyKeyboardMaker;
     }
 
     @Override
@@ -83,13 +81,14 @@ public class BotServiceMain extends TelegramLongPollingBot {
     private void startCommandReceived(long chatId, String firstName) {
         String answer = "Привет, " + firstName + "! Рад видеть тебя! Спасибо что воспользовался ListsNotesBot";
         sendMessage(chatId, answer);
+
     }
 
     private void sendMessage(long chatId, String textToSend) {
         SendMessage message = new SendMessage();
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
-//        message.setReplyMarkup(replyKeyboardMaker.getMainMenuKeyboard());
+        message.setReplyMarkup(replyKeyboardMaker.getMainMenuKeyboard());
 
         try {
             execute(message);
