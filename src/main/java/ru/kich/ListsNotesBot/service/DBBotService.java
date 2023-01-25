@@ -10,9 +10,14 @@ public interface DBBotService {
     UserEntity registerUser(Long id);
     UserEntity findUserById(Long id);
     TopicEntity createTopic(Long id, String nameOfTopic);
-    List<TopicEntity> getTopicByName(String nameOfTopic);
-    PositionEntity createPosition(Long userId, String nameOfTopic, String nameOfPosition);
+    TopicEntity getTopicByName(String nameOfTopic);
+    PositionEntity createPosition(String nameOfTopic, String nameOfPosition);
     List<TopicEntity> getAllTopics(Long userId);
-    List<PositionEntity> getPositionsByTopicId(TopicEntity topic);
+    List<PositionEntity> getPositionsByTopic(TopicEntity topic);
+    List<PositionEntity> deleteAllPositionsInTopic(String nameOfTopic);
+    TopicEntity deleteTopic(String nameOfTopic);
+    TopicEntity editNameOfTopic(String oldName, String newName);
+    PositionEntity deletePosition(String nameOfTopic, String nameOfPosition);
+    PositionEntity editNameOfPosition (String nameOfTopic, String oldNamePosition, String newNamePosition);
 
 }

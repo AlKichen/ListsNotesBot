@@ -51,23 +51,18 @@ public class BotServiceImpl implements DBBotService {
     }
 
     @Override
-    public List<TopicEntity> getTopicByName(String nameOfTopic) {
-        return topicRepositiry.findByName(nameOfTopic);
+    public TopicEntity getTopicByName(String nameOfTopic) {
+        return topicRepositiry.findByName(nameOfTopic).orElseThrow(NotFoundException::new);
     }
 
     @Override
-    public PositionEntity createPosition(Long userId, String nameOfTopic, String nameOfPosition) {
-        List<TopicEntity> topicEntityList = getTopicByName(nameOfTopic);
+    public PositionEntity createPosition(String nameOfTopic, String nameOfPosition) {
+        TopicEntity topic = getTopicByName(nameOfTopic);
         PositionEntity positionEntity = new PositionEntity();
         positionEntity.setNamePosition(nameOfPosition);
-        TopicEntity topic = null;
-        for (TopicEntity entity : topicEntityList){
-            if (entity.getUser().getId().equals(userId)){
-                topic = entity;
-            }
-        }
         positionEntity.setTopic(topic);
-        return positionRepository.save(positionEntity);
+        positionRepository.save(positionEntity);
+        return positionEntity;
     }
 
     @Override
@@ -76,8 +71,63 @@ public class BotServiceImpl implements DBBotService {
     }
 
     @Override
-    public List<PositionEntity> getPositionsByTopicId(TopicEntity topic) {
+    public List<PositionEntity> getPositionsByTopic(TopicEntity topic) {
         return positionRepository.findByTopic(topic);
+    }
+
+    @Override
+    public List<PositionEntity> deleteAllPositionsInTopic(String nameOfTopic) {
+        TopicEntity topic = getTopicByName(nameOfTopic);
+        List<PositionEntity> listPositions = getPositionsByTopic(topic);
+        positionRepository.deleteAll(listPositions);
+        return listPositions;
+    }
+
+    @Override
+    public TopicEntity deleteTopic(String nameOfTopic) {
+        TopicEntity topic = getTopicByName(nameOfTopic);
+        List<PositionEntity> listPositions = getPositionsByTopic(topic);
+        if (listPositions.isEmpty()) {
+            topicRepositiry.delete(topic);
+        }
+        return topic;
+    }
+
+    @Override
+    public TopicEntity editNameOfTopic(String oldName, String newName) {
+        TopicEntity topic = getTopicByName(oldName);
+        topic.setName(newName);
+        topicRepositiry.save(topic);
+        return topic;
+    }
+
+    @Override
+    public PositionEntity deletePosition(String nameOfTopic, String nameOfPosition) {
+        TopicEntity topic = getTopicByName(nameOfTopic);
+        List<PositionEntity> listPositions = getPositionsByTopic(topic);
+        PositionEntity positionEntity = null;
+        for (PositionEntity p : listPositions) {
+            if (p.getNamePosition().equals(nameOfPosition)){
+                positionEntity = p;
+                positionRepository.delete(p);
+            }
+        }
+        return positionEntity;
+    }
+
+    @Override
+    public PositionEntity editNameOfPosition(String nameOfTopic, String oldNamePosition, String newNamePosition) {
+        TopicEntity topic = getTopicByName(nameOfTopic);
+        List<PositionEntity> listPositions = getPositionsByTopic(topic);
+        PositionEntity positionEntity = null;
+        for (PositionEntity p : listPositions) {
+            if (p.getNamePosition().equals(oldNamePosition)){
+                p.setNamePosition(newNamePosition);
+                positionEntity = p;
+                positionRepository.save(p);
+            }
+        }
+        return positionEntity;
     }
 
 }

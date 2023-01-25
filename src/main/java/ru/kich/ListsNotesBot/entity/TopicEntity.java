@@ -15,7 +15,7 @@ public class TopicEntity {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long Id;
 
-    @Column(name = "name_of_topic", nullable = false)
+    @Column(name = "name_of_topic", nullable = false, unique = true)
     private String name;
 
     @ManyToOne

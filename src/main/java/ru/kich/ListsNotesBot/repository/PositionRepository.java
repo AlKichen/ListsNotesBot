@@ -9,5 +9,5 @@ import java.util.List;
 
 @Repository
 public interface PositionRepository extends JpaRepository<PositionEntity, Long> {
-    List<PositionEntity> findByTopic (TopicEntity topic);
+    List<PositionEntity> findByTopic(TopicEntity topic);
 }

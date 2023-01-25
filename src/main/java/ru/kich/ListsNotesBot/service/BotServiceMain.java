@@ -48,17 +48,63 @@ public class BotServiceMain extends TelegramLongPollingBot {
     @Override
     public void onUpdateReceived(Update update) {
         if (update.hasCallbackQuery()) {
-            String call_data = update.getCallbackQuery().getData();
-            if (call_data.startsWith("/list_of_topics")) {
-                String[] arr = call_data.split("%");
-                String nameOfTopic = arr[1];
-                sendMessage(update.getCallbackQuery().getMessage().getChatId(),
+            String callData = update.getCallbackQuery().getData();
+            long chatId = update.getCallbackQuery().getMessage().getChatId();
+            if (callData.startsWith("/list_of_topics")) {
+                listOfCommands.add(callData);
+                String nameOfTopic = getNameFromData(callData);
+                sendMessage(chatId,
                         "Вы выбрали список: " + nameOfTopic + ".\n" +
                                 "Выберите действия со списком или воспользуйтесь командой" +
                                 " /show_topics чтобы ещё раз продемонстрировать все списки",
-                        inlineKeyboardMaker.getInlineFunctionsOfTopic(nameOfTopic)); //TODO функционал кнопок
-            } else if (call_data.startsWith("/functions_topic")) {
-
+                        inlineKeyboardMaker.getInlineFunctionsOfTopic(nameOfTopic));
+                System.out.println(listOfCommands); //test
+            } else if (callData.startsWith("/functions_topic")) {
+                if (callData.startsWith("/functions_topic_show_positions")) {
+                    listOfCommands.add(callData);
+                    String nameOfTopic = getNameFromData(callData);
+                    showPositions(chatId, nameOfTopic);
+                    System.out.println(listOfCommands); //test
+                } else if (callData.startsWith("/functions_topic_delete")) {
+                    String nameOfTopic = getNameFromData(callData);
+                    service.deleteAllPositionsInTopic(nameOfTopic);
+                    service.deleteTopic(nameOfTopic);
+                    sendMessage(chatId, "Список с названием: " + nameOfTopic + " был удален.");
+                    System.out.println(listOfCommands); //test
+                } else if (callData.startsWith("/functions_topic_edit_name_of_topic")) {
+                    listOfCommands.add(callData);
+                    sendMessage(chatId, "Введите новое имя списка:");
+                    System.out.println(listOfCommands); //test
+                } else if (callData.startsWith("/functions_topic_add_position")) {
+                    listOfCommands.add(callData);
+                    sendMessage(chatId, "Введите позицию, которую хотите добавить в список:");
+                    System.out.println(listOfCommands); //test
+                }
+            } else if (callData.startsWith("/list_of_positions")) {
+                listOfCommands.add(callData);
+                String nameOfPosition = getNameFromData(callData);
+                sendMessage(chatId,
+                        "Вы выбрали позицию: " + nameOfPosition + ".\n" +
+                                "Выберите действия с этой позицией или воспользуйтесь командой" +
+                                " /show_positions чтобы ещё раз продемонстрировать все позиции списка",
+                        inlineKeyboardMaker.getInlineFunctionsOfPositions(nameOfPosition));
+                System.out.println(listOfCommands); //test
+            } else if (callData.startsWith("/functions_position")) {
+                if (callData.startsWith("/functions_position_delete")) {
+                    String nameOfTopic = getNameFromData(listOfCommands.get(listOfCommands.size() - 2));
+                    System.out.println(callData); //test
+                    String nameOfPosition = getNameFromData(callData);
+                    service.deletePosition(nameOfTopic, nameOfPosition);
+                    sendMessage(chatId,
+                            "Позиция: " + nameOfPosition + " была удалена из списка " + nameOfTopic + ".\n" +
+                                    "Воспользуйтесь командой" +
+                                    " /show_positions чтобы ещё раз продемонстрировать все позиции списка");
+                    System.out.println(listOfCommands); //test
+                } else if (callData.startsWith("/functions_position_rename")) {
+                    listOfCommands.add(callData);
+                    sendMessage(chatId, "Введите новое имя позиции:");
+                    System.out.println(listOfCommands); //test
+                }
             }
         }
         if (update.hasMessage() && update.getMessage().hasText()) {
@@ -69,13 +115,16 @@ public class BotServiceMain extends TelegramLongPollingBot {
                 service.registerUser(chatId);
                 sendMessage(chatId, "Пользователь создан и зарегистрирован в БД");
                 listOfCommands.add("/start");
+                System.out.println(listOfCommands); //test
             } else if (messageText.equals("/create_topic")) {
                 listOfCommands.add("/create_topic");
                 sendMessage(chatId, "Введите название списка");
+                System.out.println(listOfCommands); //test
             } else if (messageText.equals("/create_position_in_topic")) {
                 listOfCommands.add("/create_position_in_topic");
                 //TODO видимо не нужно это - в открытом списке будет кнопка добавить поцицию
                 sendMessage(chatId, "Введите имя списка и через ; имя новой позиции в списке");
+                System.out.println(listOfCommands); //test
             } else if (messageText.equals("/show_topics")) {
                 List<TopicEntity> allTopics = service.getAllTopics(chatId);
                 List<String> namesOfTopics = allTopics.stream().map(TopicEntity::getName).collect(Collectors.toList());
@@ -83,10 +132,15 @@ public class BotServiceMain extends TelegramLongPollingBot {
                         .getInlineMessageButtons("/list_of_topics%", namesOfTopics);
                 listOfCommands.add("/show_topics");
                 sendMessage(chatId, "Выберите список:", inlineKeyBoard);
+                System.out.println(listOfCommands); //test
             } else if (messageText.equals("/show_positions")) {
-                List<TopicEntity> allTopics2 = service.getAllTopics(chatId);
+                String topicName = getNameFromData(listOfCommands.get(listOfCommands.size() - 2));
+                showPositions(chatId, topicName);
+                System.out.println(listOfCommands); //test
+                //May be it don't need
+                /*List<TopicEntity> allTopics2 = service.getAllTopics(chatId);
                 TopicEntity topic = allTopics2.get(0);
-                List<PositionEntity> allPositions = service.getPositionsByTopicId(topic);
+                List<PositionEntity> allPositions = service.getPositionsByTopic(topic);
                 StringBuilder sb2 = new StringBuilder();
                 List<String> namesOfPositions = allPositions.stream()
                         .map(PositionEntity::getNamePosition).collect(Collectors.toList());
@@ -94,18 +148,39 @@ public class BotServiceMain extends TelegramLongPollingBot {
                     sb2.append("- ").append(nameOfPosition).append(";").append("\n");
                 }
                 listOfCommands.add("/show_positions");
-                sendMessage(chatId, sb2.toString());
+                sendMessage(chatId, sb2.toString());*/
             } else if (!messageText.startsWith("/")) {
                 if (listOfCommands.get(listOfCommands.size() - 1).equals("/create_topic")) {
                     service.createTopic(chatId, messageText);
                     sendMessage(chatId, "Название списка создано и сохранено в БД");
-                } else if (listOfCommands.get(listOfCommands.size() - 1).equals("/create_position_in_topic")) {
+                    System.out.println(listOfCommands); //test
+                } else if (listOfCommands.get(listOfCommands.size() - 1).startsWith("/functions_topic_edit_name_of_topic")) {
+                    String oldName = getNameFromData(listOfCommands.get(listOfCommands.size() - 1));
+                    service.editNameOfTopic(oldName, messageText);
+                    sendMessage(chatId, "Название списка изменено и сохранено в БД");
+                    System.out.println(listOfCommands); //test
+                } else if (listOfCommands.get(listOfCommands.size() - 1).startsWith("/functions_topic_add_position")) {
+                    String nameOfTopic = getNameFromData(listOfCommands.get(listOfCommands.size() - 1));
+                    service.createPosition(nameOfTopic, messageText);
+                    sendMessage(chatId, "Позиция добавлена в список и сохранена в БД");
+                    System.out.println(listOfCommands); //test
+                } else if (listOfCommands.get(listOfCommands.size() - 1).startsWith("/functions_position_rename")) {
+                    String nameOfTopic = getNameFromData(listOfCommands.get(listOfCommands.size() - 3));
+                    String oldNamePosition = getNameFromData(listOfCommands.get(listOfCommands.size() - 1));
+                    listOfCommands.add(listOfCommands.get(listOfCommands.size() - 3));
+                    listOfCommands.add(listOfCommands.get(listOfCommands.size() - 3));
+                    service.editNameOfPosition(nameOfTopic, oldNamePosition, messageText);
+                    sendMessage(chatId, "Позиция переименована и сохранена в БД. \n"+
+                                    "Воспользуйтесь командой" +
+                            " /show_positions чтобы ещё раз продемонстрировать все позиции списка");
+                    System.out.println(listOfCommands); //test
+                } /*else if (listOfCommands.get(listOfCommands.size() - 1).equals("/create_position_in_topic")) {
                     String[] arr = messageText.split(";");
                     String nameOfTopicAdded = arr[0];
                     String nameOfPositionAdded = arr[1];
                     service.createPosition(chatId, nameOfTopicAdded, nameOfPositionAdded);
                     sendMessage(chatId, "Позиция добавлена в список и сохранена в БД");
-                } else {
+                }*/ else {
                     sendMessage(chatId, "Извините, данная функциональность в стадии разработки." +
                             " Спасибо за понимание!");
                 }
@@ -142,5 +217,19 @@ public class BotServiceMain extends TelegramLongPollingBot {
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String getNameFromData(String callData) {
+        String[] arr = callData.split("%");
+        return arr[1];
+    }
+
+    private void showPositions(long chatId, String nameOfTopic) {
+        TopicEntity topic2 = service.getTopicByName(nameOfTopic);
+        List<PositionEntity> allPositions = service.getPositionsByTopic(topic2);
+        List<String> namesOfPositions = allPositions.stream()
+                .map(PositionEntity::getNamePosition).collect(Collectors.toList());
+        sendMessage(chatId, "Позиции списка " + nameOfTopic + " :",
+                inlineKeyboardMaker.getInlineMessageButtons("/list_of_positions%", namesOfPositions));
     }
 }

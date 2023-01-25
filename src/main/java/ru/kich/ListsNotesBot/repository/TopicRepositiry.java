@@ -6,10 +6,11 @@ import ru.kich.ListsNotesBot.entity.TopicEntity;
 import ru.kich.ListsNotesBot.entity.UserEntity;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface TopicRepositiry extends JpaRepository<TopicEntity, Long> {
-    List<TopicEntity> findByName(String nameOfTopic);
+    Optional<TopicEntity> findByName(String nameOfTopic);
 
     List<TopicEntity> findByUser_Id(Long id);
 }
