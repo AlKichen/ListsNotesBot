@@ -4,8 +4,10 @@ import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.kich.ListsNotesBot.config.BotConfig;
+import ru.kich.ListsNotesBot.config.InlineKeyboardMaker;
 import ru.kich.ListsNotesBot.config.ReplyKeyboardMaker;
 import ru.kich.ListsNotesBot.entity.PositionEntity;
 import ru.kich.ListsNotesBot.entity.TopicEntity;
@@ -18,20 +20,19 @@ import java.util.stream.Collectors;
 public class BotServiceMain extends TelegramLongPollingBot {
 
     private final BotConfig config;
-
     private final BotServiceImpl service;
     private final ReplyKeyboardMaker replyKeyboardMaker;
+    private final InlineKeyboardMaker inlineKeyboardMaker;
     private final List<String> listOfCommands = new ArrayList<>();
-//    private final UserRepository userRepository;
-//
-//    private final TopicRepositiry topicRep;
-//    private final PositionRepository positionRep;
 
 
-    public BotServiceMain(BotConfig config, BotServiceImpl service, ReplyKeyboardMaker replyKeyboardMaker) {
+    public BotServiceMain(BotConfig config, BotServiceImpl service,
+                          ReplyKeyboardMaker replyKeyboardMaker,
+                          InlineKeyboardMaker inlineKeyboardMaker) {
         this.config = config;
         this.service = service;
         this.replyKeyboardMaker = replyKeyboardMaker;
+        this.inlineKeyboardMaker = inlineKeyboardMaker;
     }
 
     @Override
@@ -46,6 +47,20 @@ public class BotServiceMain extends TelegramLongPollingBot {
 
     @Override
     public void onUpdateReceived(Update update) {
+        if (update.hasCallbackQuery()) {
+            String call_data = update.getCallbackQuery().getData();
+            if (call_data.startsWith("/list_of_topics")) {
+                String[] arr = call_data.split("%");
+                String nameOfTopic = arr[1];
+                sendMessage(update.getCallbackQuery().getMessage().getChatId(),
+                        "Вы выбрали список: " + nameOfTopic + ".\n" +
+                                "Выберите действия со списком или воспользуйтесь командой" +
+                                " /show_topics чтобы ещё раз продемонстрировать все списки",
+                        inlineKeyboardMaker.getInlineFunctionsOfTopic(nameOfTopic)); //TODO функционал кнопок
+            } else if (call_data.startsWith("/functions_topic")) {
+
+            }
+        }
         if (update.hasMessage() && update.getMessage().hasText()) {
             String messageText = update.getMessage().getText();
             long chatId = update.getMessage().getChatId();
@@ -59,16 +74,15 @@ public class BotServiceMain extends TelegramLongPollingBot {
                 sendMessage(chatId, "Введите название списка");
             } else if (messageText.equals("/create_position_in_topic")) {
                 listOfCommands.add("/create_position_in_topic");
+                //TODO видимо не нужно это - в открытом списке будет кнопка добавить поцицию
                 sendMessage(chatId, "Введите имя списка и через ; имя новой позиции в списке");
             } else if (messageText.equals("/show_topics")) {
                 List<TopicEntity> allTopics = service.getAllTopics(chatId);
-                StringBuilder sb = new StringBuilder();
                 List<String> namesOfTopics = allTopics.stream().map(TopicEntity::getName).collect(Collectors.toList());
-                for (String nameOfTopic : namesOfTopics) {
-                    sb.append("- ").append(nameOfTopic).append(";").append("\n");
-                } //TODO пока так, потом inline клавиатуру сделать нужно
+                InlineKeyboardMarkup inlineKeyBoard = inlineKeyboardMaker
+                        .getInlineMessageButtons("/list_of_topics%", namesOfTopics);
                 listOfCommands.add("/show_topics");
-                sendMessage(chatId, sb.toString());
+                sendMessage(chatId, "Выберите список:", inlineKeyBoard);
             } else if (messageText.equals("/show_positions")) {
                 List<TopicEntity> allTopics2 = service.getAllTopics(chatId);
                 TopicEntity topic = allTopics2.get(0);
@@ -96,41 +110,6 @@ public class BotServiceMain extends TelegramLongPollingBot {
                             " Спасибо за понимание!");
                 }
             }
-
-            /*switch (messageText) {
-                case "/start":
-                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                    service.registerUser(chatId);
-                    sendMessage(chatId, "Пользователь создан и зарегестрирован в БД");
-                    listOfCommands.add("/start");
-                    break;
-                case "/create_topic":
-                    service.createTopic(chatId, "Test name of Topic");
-                    listOfCommands.add("/create_topic");
-                    //TODO
-                    sendMessage(chatId, "Название списка создано и сохранено в БД");
-                    break;
-                case "/create_position_in_topic":
-                    service.createPosition(chatId, "Test name of Topic", "Test name of position");
-                    listOfCommands.add("/create_position_in_topic");
-                    sendMessage(chatId, "Позиция добавлена в список и сохранена в БД");
-                    break;
-                case "/show_topics":
-                    List<TopicEntity> allTopics = service.getAllTopics(chatId);
-                    listOfCommands.add("/show_topics");
-                    sendMessage(chatId, allTopics.toString());
-                    break;
-                case "/show_positions":
-                    List<TopicEntity> allTopics2 = service.getAllTopics(chatId);
-                    TopicEntity topic = allTopics2.get(0);
-                    List<PositionEntity> allPositions = service.getPositionsByTopicId(topic);
-                    sendMessage(chatId, allPositions.toString());
-                    break;
-                default:
-                    sendMessage(chatId, "Извините, данная функциональность в стадии разработки." +
-                            " Спасибо за понимание!");
-
-            }*/
         }
     }
 
@@ -145,8 +124,19 @@ public class BotServiceMain extends TelegramLongPollingBot {
         message.setChatId(String.valueOf(chatId));
         message.setText(textToSend);
         message.setReplyMarkup(replyKeyboardMaker.getMainMenuKeyboard());
-//        message.setReplyMarkup();
+        try {
+            execute(message);
+        } catch (TelegramApiException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
+    private void sendMessage(long chatId, String textToSend, InlineKeyboardMarkup inlineKeyboard) {
+        SendMessage message = new SendMessage();
+        message.setChatId(String.valueOf(chatId));
+        message.setText(textToSend);
+        message.setReplyMarkup(replyKeyboardMaker.getMainMenuKeyboard());
+        message.setReplyMarkup(inlineKeyboard);
         try {
             execute(message);
         } catch (TelegramApiException e) {
