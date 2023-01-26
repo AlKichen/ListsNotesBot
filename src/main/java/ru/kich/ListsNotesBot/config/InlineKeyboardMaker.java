@@ -24,6 +24,7 @@ public class InlineKeyboardMaker {
         inlineKeyboardMarkup.setKeyboard(rowList);
         return inlineKeyboardMarkup;
     }
+
     public InlineKeyboardMarkup getInlineFunctionsOfPositions(String nameOfPosition) {
         List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
         String delete = "/functions_position_delete%" + nameOfPosition;
@@ -42,6 +43,34 @@ public class InlineKeyboardMaker {
         for (String str : stringList) {
             rowList.add(getButton(str, prefix + str));
         }
+
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(rowList);
+        return inlineKeyboardMarkup;
+    }
+
+    public InlineKeyboardMarkup getInlineMessageButtonsPlusNewPosition(String prefix, List<String> stringList) {
+
+        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+
+        for (String str : stringList) {
+            rowList.add(getButton(str, prefix + str));
+        }
+        rowList.add(getButton("Добавить позицию в список", "/functions_topic_add_position"));
+
+        InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
+        inlineKeyboardMarkup.setKeyboard(rowList);
+        return inlineKeyboardMarkup;
+    }
+
+    public InlineKeyboardMarkup getInlineMessageButtonsPlusNewTopic(String prefix, List<String> stringList) {
+
+        List<List<InlineKeyboardButton>> rowList = new ArrayList<>();
+
+        for (String str : stringList) {
+            rowList.add(getButton(str, prefix + str));
+        }
+        rowList.add(getButton("Добавить новый список", "/create_topic"));
 
         InlineKeyboardMarkup inlineKeyboardMarkup = new InlineKeyboardMarkup();
         inlineKeyboardMarkup.setKeyboard(rowList);

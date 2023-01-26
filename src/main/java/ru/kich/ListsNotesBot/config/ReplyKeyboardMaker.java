@@ -13,13 +13,11 @@ public class ReplyKeyboardMaker {
 
     public ReplyKeyboardMarkup getMainMenuKeyboard() {
         KeyboardRow row1 = new KeyboardRow();
-        row1.add(new KeyboardButton(ButtonNameEnum.START.getButtonName()));
+        row1.add(new KeyboardButton(ButtonNameEnum.HELP.getButtonName()));
         row1.add(new KeyboardButton(ButtonNameEnum.CREATE_TOPIC.getButtonName()));
 
         KeyboardRow row2 = new KeyboardRow();
-        row2.add(new KeyboardButton(ButtonNameEnum.CREATE_POSITION_IN_TOPIC.getButtonName()));
         row2.add(new KeyboardButton(ButtonNameEnum.SHOW_TOPICS.getButtonName()));
-        row2.add(new KeyboardButton(ButtonNameEnum.SHOW_POSITIONS.getButtonName()));
 
         List<KeyboardRow> keyboard = new ArrayList<>();
         keyboard.add(row1);

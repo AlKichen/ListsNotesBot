@@ -1,11 +1,9 @@
 package ru.kich.ListsNotesBot.config;
 
 public enum ButtonNameEnum {
-    START("/start"),
-    CREATE_TOPIC("/create_topic"),
-    CREATE_POSITION_IN_TOPIC("/create_position_in_topic"),
-    SHOW_TOPICS("/show_topics"),
-    SHOW_POSITIONS("/show_positions");
+    HELP("/справка"),
+    CREATE_TOPIC("/создать_новый_список"),
+    SHOW_TOPICS("/показать_мои_списки");
     private final String buttonName;
 
     ButtonNameEnum(String buttonName) {
