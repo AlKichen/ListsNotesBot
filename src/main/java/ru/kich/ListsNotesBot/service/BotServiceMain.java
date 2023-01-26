@@ -28,7 +28,6 @@ public class BotServiceMain extends TelegramLongPollingBot {
     private final List<String> listOfCommands = new ArrayList<>();
     private String lastUsedTopic;
     private String lastUsedPosition;
-    private boolean userIsCreated = false;
 
 
     public BotServiceMain(BotConfig config, BotServiceImpl service,
@@ -125,12 +124,9 @@ public class BotServiceMain extends TelegramLongPollingBot {
             long chatId = update.getMessage().getChatId();
             if (messageText.equals("/start")) {
                 log.info("messageText: {}", messageText);
-                if (!userIsCreated) {
-                    startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
-                    service.registerUser(chatId);
-                    sendMessage(chatId, "Пользователь создан и зарегистрирован в БД");
-                    userIsCreated = true;
-                }
+                startCommandReceived(chatId, update.getMessage().getChat().getFirstName());
+                service.registerUser(chatId);
+                sendMessage(chatId, "Пользователь создан и зарегистрирован в БД");
             } else if (messageText.equals("/создать_новый_список") || messageText.equals("/create_topic")) {
                 log.info("messageText: {}", messageText);
                 listOfCommands.add("/create_topic");
